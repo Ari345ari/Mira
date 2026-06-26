@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+.next/
+out/
+build/
+
+# Environment files — NEVER commit these
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# Testing
+coverage/
+.nyc_output
+
+# Terraform state — use remote state instead
+*.tfstate
+*.tfstate.*
+.terraform/
+
+# Temporary files
+tmp/
+temp/
+
+# Uploaded media files — not tracked in git
+backend/uploads/
+backend/uploads/workspace/
