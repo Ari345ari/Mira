@@ -17,7 +17,7 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       setAuth: (user, accessToken) => set({ user, accessToken }),
       clearAuth: () => {
-        localStorage.removeItem('access_token')
+        localStorage.removeItem('mira-auth')
         set({ user: null, accessToken: null })
       },
     }),

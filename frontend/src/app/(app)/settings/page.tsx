@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useAuthStore } from '@/store/auth'
-import { useRouter } from 'next/navigation'
+import { useWorkspaceStore } from '@/store/workspace'
 import toast from 'react-hot-toast'
 import { User, Bell, Shield, Trash2, AlertTriangle } from 'lucide-react'
 
@@ -36,7 +36,6 @@ function Toggle({ on, onToggle }: { on: boolean; onToggle: () => void }) {
 
 export default function SettingsPage() {
   const { user, setAuth, accessToken, clearAuth } = useAuthStore()
-  const router = useRouter()
   const [active,        setActive]        = useState('profile')
   const [name,          setName]          = useState(user?.full_name ?? '')
   const [lang,          setLang]          = useState(user?.preferred_language ?? 'en')
@@ -64,8 +63,9 @@ export default function SettingsPage() {
   function handleDeleteAccount() {
     if (deleteConfirm !== 'DELETE') return
     clearAuth()
+    useWorkspaceStore.getState().clearActiveWs()
     toast.success('Account deleted')
-    router.push('/')
+    window.location.href = '/'
   }
 
   function handlePasswordChange(e: React.FormEvent<HTMLFormElement>) {

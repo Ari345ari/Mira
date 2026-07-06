@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, Mic, Settings, LogOut, Plus,
   ChevronLeft, ChevronRight, ChevronDown, Check,
@@ -53,7 +53,6 @@ function Mark() {
 
 export default function Sidebar() {
   const pathname    = usePathname()
-  const router      = useRouter()
   const { user, clearAuth } = useAuthStore()
   const { collapsed, toggle } = useSidebar()
 
@@ -258,7 +257,14 @@ export default function Sidebar() {
                 <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.42)', margin: 0, lineHeight: 1.3, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user?.email ?? ''}</p>
               </div>
               <button
-                onClick={() => { router.push('/'); setTimeout(clearAuth, 80) }}
+                onClick={() => {
+                  clearAuth()
+                  useWorkspaceStore.getState().clearActiveWs()
+                  // Hard redirect (not router.push) so React Query's in-memory
+                  // cache and any other client state can't leak into the next
+                  // user's session on this browser
+                  window.location.href = '/'
+                }}
                 title="Sign out"
                 style={{ flexShrink: 0, background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 5, color: 'rgba(255,255,255,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'color 0.15s' }}
                 onMouseEnter={e => (e.currentTarget.style.color = 'rgba(255,255,255,0.75)')}

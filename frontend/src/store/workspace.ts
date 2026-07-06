@@ -6,6 +6,7 @@ const KEY = 'mira-active-ws-id'
 interface WorkspaceState {
   activeWsId: string | null
   setActiveWsId: (id: string) => void
+  clearActiveWs: () => void
 }
 
 export const useWorkspaceStore = create<WorkspaceState>()((set) => ({
@@ -13,6 +14,10 @@ export const useWorkspaceStore = create<WorkspaceState>()((set) => ({
   setActiveWsId: (id) => {
     try { localStorage.setItem(KEY, id) } catch {}
     set({ activeWsId: id })
+  },
+  clearActiveWs: () => {
+    try { localStorage.removeItem(KEY) } catch {}
+    set({ activeWsId: null })
   },
 }))
 
