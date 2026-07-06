@@ -38,6 +38,7 @@ export function useMediaPlayer(meetingId: string, enabled: boolean) {
     fetch(url, { method: 'HEAD' })
       .then(r => {
         if (cancelled) return
+        if (!r.ok) { setMediaError(true); return }
         setIsVideo((r.headers.get('content-type') ?? '').startsWith('video/'))
         setMediaUrl(url)
       })
