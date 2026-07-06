@@ -17,7 +17,7 @@ export function useMediaPlayer(meetingId: string, enabled: boolean) {
     if (!enabled) return
     let url = ''
     let cancelled = false
-    api.get(`/meetings/${meetingId}/media`, { responseType: 'blob', timeout: 60000 })
+    api.get(`/meetings/${meetingId}/media`, { responseType: 'blob', timeout: 0 })
       .then(r => {
         if (cancelled) return
         setIsVideo(r.data.type?.startsWith('video/'))
