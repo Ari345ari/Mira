@@ -41,7 +41,7 @@ export function SpeakerRenameModal({ speaker, displayName, hasCustomName, onSave
           onKeyDown={(e) => { if (e.key === 'Enter') onSave(input.trim()); if (e.key === 'Escape') onClose() }}
           onFocus={(e) => (e.currentTarget.style.borderColor = 'rgba(99,102,241,0.5)')}
           onBlur={(e) => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.12)')}
-          placeholder="e.g. Ariunjargal"
+          placeholder="Enter a name"
           style={{ width: '100%', boxSizing: 'border-box', padding: '11px 14px', borderRadius: 10, fontSize: 14, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.12)', color: C.text1, outline: 'none', marginBottom: 6, transition: 'border-color 0.15s' }}
         />
         <p style={{ fontSize: 11, color: C.text3, margin: '0 0 18px' }}>Leave blank to reset to auto-name</p>
