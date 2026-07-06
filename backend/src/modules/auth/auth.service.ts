@@ -1,6 +1,6 @@
 import {
   Injectable, UnauthorizedException,
-  ConflictException,
+  ConflictException, BadRequestException,
 } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository, IsNull } from 'typeorm'
@@ -11,7 +11,7 @@ import { randomBytes, createHash, randomUUID } from 'crypto'
 import { User } from '../../database/entities/user.entity'
 import { Workspace } from '../../database/entities/workspace.entity'
 import { WorkspaceMember, WorkspaceRole } from '../../database/entities/workspace-member.entity'
-import { SignupDto, LoginDto } from './auth.dto'
+import { SignupDto, LoginDto, ForgotPasswordDto, ResetPasswordDto } from './auth.dto'
 
 interface TokenPair {
   access_token: string
@@ -27,6 +27,7 @@ const refreshTokenStore = new Map<string, {
   isValid: boolean
   expiresAt: Date
 }>()
+
 
 @Injectable()
 export class AuthService {
@@ -172,6 +173,41 @@ export class AuthService {
 
     if (!user) throw new UnauthorizedException()
     return user
+  }
+
+  async forgotPassword(dto: ForgotPasswordDto): Promise<{ message: string; token?: string }> {
+    const user = await this.userRepo.findOne({ where: { email: dto.email.toLowerCase() } })
+    if (!user) {
+      return { message: 'If that email is registered, a reset token has been generated.' }
+    }
+    const rawToken = randomBytes(32).toString('hex')
+    const tokenHash = this.hashToken(rawToken)
+    await this.userRepo.update(user.id, {
+      password_reset_token_hash: tokenHash,
+      password_reset_expires_at: new Date(Date.now() + 3600_000),
+    })
+    // In production: email rawToken. For dev, return it directly.
+    return { message: 'Reset token generated.', token: rawToken }
+  }
+
+  async resetPassword(dto: ResetPasswordDto): Promise<{ message: string }> {
+    const tokenHash = this.hashToken(dto.token)
+    const user = await this.userRepo
+      .createQueryBuilder('u')
+      .addSelect('u.password_reset_token_hash')
+      .addSelect('u.password_reset_expires_at')
+      .where('u.password_reset_token_hash = :tokenHash', { tokenHash })
+      .getOne()
+    if (!user || !user.password_reset_expires_at || user.password_reset_expires_at < new Date()) {
+      throw new BadRequestException({ code: 'INVALID_RESET_TOKEN', message: 'Invalid or expired reset token.' })
+    }
+    const password_hash = await bcrypt.hash(dto.new_password, 12)
+    await this.userRepo.update(user.id, {
+      password_hash,
+      password_reset_token_hash: null,
+      password_reset_expires_at: null,
+    })
+    return { message: 'Password updated successfully.' }
   }
 
   private async issueTokenPair(

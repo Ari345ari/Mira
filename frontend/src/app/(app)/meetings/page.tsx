@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { format, isToday, isYesterday, differenceInDays } from 'date-fns'
+import { format } from 'date-fns'
 import { Loader2, Search, Plus, X, MoreHorizontal, ExternalLink, Link2, Check, Trash2 } from 'lucide-react'
 import { useMeetings, useDeleteMeeting } from '@/hooks/use-meetings'
 import { useWorkspaceStore } from '@/store/workspace'
@@ -11,21 +11,8 @@ import { useWorkspaces } from '@/hooks/use-meetings'
 import { MeetingStatus } from '@/types'
 import { gsap } from 'gsap'
 import toast from 'react-hot-toast'
-
-function fmtDur(s: number | null) {
-  if (!s) return null
-  const m = Math.floor(s / 60)
-  return m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`
-}
-
-function dateLabel(dateStr: string) {
-  const d = new Date(dateStr)
-  if (isToday(d)) return 'Today'
-  if (isYesterday(d)) return 'Yesterday'
-  const diff = differenceInDays(new Date(), d)
-  if (diff < 7) return format(d, 'EEEE')
-  return format(d, 'MMM d, yyyy')
-}
+import { fmtDur, dateLabel } from '@/lib/format'
+import { TiltRow } from '@/components/meetings/tilt-row'
 
 const PROCESSING_STATUSES = [
   MeetingStatus.QUEUED, MeetingStatus.UPLOADING, MeetingStatus.TRANSCRIBING,
@@ -41,95 +28,6 @@ const FILTER_CONFIG: Record<Filter, { label: string; color: string; glow: string
   done:       { label: 'Done',       color: '#34d399',                glow: 'rgba(16,185,129,0.12)',  dot: '#10b981',                shadow: 'rgba(16,185,129,0.18)' },
   processing: { label: 'Processing', color: '#fbbf24',                glow: 'rgba(245,158,11,0.1)',   dot: '#f59e0b',                shadow: 'rgba(245,158,11,0.15)' },
   failed:     { label: 'Failed',     color: '#f87171',                glow: 'rgba(239,68,68,0.1)',    dot: '#ef4444',                shadow: 'rgba(239,68,68,0.14)' },
-}
-
-/* ── 3-D tilt row ──────────────────────────────────────── */
-function TiltRow({
-  children,
-  style,
-  href,
-  statusColor,
-  glowColor,
-  isLast,
-}: {
-  children: React.ReactNode
-  style?: React.CSSProperties
-  href: string
-  statusColor: string
-  glowColor: string
-  isLast: boolean
-}) {
-  const ref  = useRef<HTMLAnchorElement>(null)
-  const spotRef = useRef<HTMLDivElement>(null)
-
-  const onMove = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
-    if (!ref.current) return
-    const rect = ref.current.getBoundingClientRect()
-    const ny = (e.clientY - rect.top)  / rect.height - 0.5
-    const nx = (e.clientX - rect.left) / rect.width  - 0.5
-
-    gsap.to(ref.current, {
-      rotateX: -ny * 10,
-      rotateY:  nx * 10,
-      transformPerspective: 900,
-      scale: 1.018,
-      z: 18,
-      duration: 0.18,
-      ease: 'power2.out',
-      overwrite: true,
-    })
-
-    // spotlight follows cursor
-    if (spotRef.current) {
-      const px = ((e.clientX - rect.left) / rect.width)  * 100
-      const py = ((e.clientY - rect.top)  / rect.height) * 100
-      spotRef.current.style.background = `radial-gradient(circle at ${px}% ${py}%, ${glowColor} 0%, transparent 65%)`
-      spotRef.current.style.opacity = '1'
-    }
-  }, [glowColor])
-
-  const onLeave = useCallback(() => {
-    gsap.to(ref.current!, {
-      rotateX: 0, rotateY: 0, scale: 1, z: 0,
-      duration: 0.55, ease: 'elastic.out(1, 0.55)', overwrite: true,
-    })
-    if (spotRef.current) spotRef.current.style.opacity = '0'
-  }, [])
-
-  return (
-    <Link
-      ref={ref}
-      href={href}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      style={{
-        ...style,
-        display: 'block',
-        textDecoration: 'none',
-        transformStyle: 'preserve-3d',
-        willChange: 'transform',
-        position: 'relative',
-        borderBottom: isLast ? 'none' : '1px solid rgba(255,255,255,0.035)',
-        /* raised-card shadow grows on hover via CSS transition */
-        transition: 'box-shadow 0.2s',
-      }}
-      onMouseEnter={(e) => {
-        ;(e.currentTarget as HTMLElement).style.boxShadow =
-          `0 12px 40px rgba(0,0,0,0.55), 0 4px 12px ${statusColor}22, inset 0 1px 0 rgba(255,255,255,0.06)`
-      }}
-    >
-      {/* Spotlight layer */}
-      <div
-        ref={spotRef}
-        style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          opacity: 0, transition: 'opacity 0.2s', borderRadius: 'inherit',
-          zIndex: 0,
-        }}
-      />
-      {children}
-    </Link>
-  )
 }
 
 export default function MeetingsPage() {

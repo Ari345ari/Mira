@@ -73,6 +73,18 @@ Rules:
     }
   }
 
+  async grammarCheck(text: string): Promise<string> {
+    try {
+      const model = this.getClient().getGenerativeModel({ model: 'gemini-2.5-flash' })
+      const result = await model.generateContent(
+        `Fix grammar, spelling, and punctuation. Return ONLY the corrected text with no explanation:\n\n${text}`,
+      )
+      return result.response.text().trim() || text
+    } catch {
+      return text
+    }
+  }
+
   private extractFromText(title: string, text: string): Protocol {
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean)
     const cleanLines = lines.map(l => l.replace(/^\[[^\]]+\]:\s*/, ''))

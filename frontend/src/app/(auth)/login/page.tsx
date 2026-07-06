@@ -95,9 +95,16 @@ export default function LoginPage() {
 
         {/* Password */}
         <div>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', marginBottom: 6, letterSpacing: '0.02em' }}>
-            PASSWORD
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+            <label style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', letterSpacing: '0.02em' }}>
+              PASSWORD
+            </label>
+            <Link href="/forgot-password" style={{ fontSize: 12, color: '#818cf8', fontWeight: 600, textDecoration: 'none' }}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#fff')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = '#818cf8')}>
+              Forgot password?
+            </Link>
+          </div>
           <div style={{ position: 'relative' }}>
             <input
               type={showPw ? 'text' : 'password'} required value={password}

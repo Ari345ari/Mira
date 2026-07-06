@@ -201,3 +201,122 @@ export function useUpdateMemberRole() {
     onSuccess: (_d, { workspaceId }) => qc.invalidateQueries({ queryKey: ['workspace-members', workspaceId] }),
   })
 }
+
+// ── Projects ──────────────────────────────────────────────────────────────────
+
+export function useProjects(workspaceId: string | null) {
+  return useQuery({
+    queryKey: ['projects', workspaceId],
+    queryFn: () => api.get(`/workspaces/${workspaceId}/projects`).then((r) => r.data),
+    enabled: !!workspaceId,
+  })
+}
+
+export function useProject(projectId: string) {
+  return useQuery({
+    queryKey: ['project', projectId],
+    queryFn: () => api.get(`/projects/${projectId}/meetings`).then((r) => r.data),
+    enabled: !!projectId,
+  })
+}
+
+export function useCreateProject() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ workspaceId, name, description, color }: { workspaceId: string; name: string; description?: string; color?: string }) =>
+      api.post(`/workspaces/${workspaceId}/projects`, { name, description, color }).then((r) => r.data),
+    onSuccess: (_d, { workspaceId }) => qc.invalidateQueries({ queryKey: ['projects', workspaceId] }),
+  })
+}
+
+export function useDeleteProject() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (projectId: string) => api.delete(`/projects/${projectId}`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['projects'] }),
+  })
+}
+
+export function useAssignProject() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ meetingId, projectId }: { meetingId: string; projectId: string | null }) =>
+      api.patch(`/meetings/${meetingId}/project`, { project_id: projectId }).then((r) => r.data),
+    onSuccess: (_d, { meetingId }) => {
+      qc.invalidateQueries({ queryKey: ['meeting', meetingId] })
+      qc.invalidateQueries({ queryKey: ['projects'] })
+    },
+  })
+}
+
+export function useSuggestProject() {
+  return useMutation({
+    mutationFn: (meetingId: string) =>
+      api.post(`/meetings/${meetingId}/suggest-project`).then((r) => r.data),
+  })
+}
+
+export function useDismissSuggestion() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (meetingId: string) =>
+      api.post(`/meetings/${meetingId}/dismiss-suggestion`).then((r) => r.data),
+    onSuccess: (_d, meetingId) => qc.invalidateQueries({ queryKey: ['meeting', meetingId] }),
+  })
+}
+
+// ── Action Items ──────────────────────────────────────────────────────────────
+
+export function useActionItems(workspaceId: string | null) {
+  return useQuery({
+    queryKey: ['action-items', workspaceId],
+    queryFn: () => api.get(`/workspaces/${workspaceId}/action-items`).then((r) => r.data),
+    enabled: !!workspaceId,
+  })
+}
+
+export function useUpdateActionStatus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ workspaceId, meetingId, index, status }: { workspaceId: string; meetingId: string; index: number; status: 'open' | 'done' }) =>
+      api.patch(`/workspaces/${workspaceId}/action-items/${meetingId}/${index}`, { status }).then((r) => r.data),
+    onSuccess: (_d, { workspaceId }) => qc.invalidateQueries({ queryKey: ['action-items', workspaceId] }),
+  })
+}
+
+// ── Templates ─────────────────────────────────────────────────────────────────
+
+export function useTemplates(workspaceId: string | null) {
+  return useQuery({
+    queryKey: ['templates', workspaceId],
+    queryFn: () => api.get(`/workspaces/${workspaceId}/templates`).then((r) => r.data),
+    enabled: !!workspaceId,
+  })
+}
+
+export function useCreateTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ workspaceId, data }: { workspaceId: string; data: any }) =>
+      api.post(`/workspaces/${workspaceId}/templates`, data).then((r) => r.data),
+    onSuccess: (_d, { workspaceId }) => qc.invalidateQueries({ queryKey: ['templates', workspaceId] }),
+  })
+}
+
+export function useUpdateTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ workspaceId, id, data }: { workspaceId: string; id: string; data: any }) =>
+      api.patch(`/workspaces/${workspaceId}/templates/${id}`, data).then((r) => r.data),
+    onSuccess: (_d, { workspaceId }) => qc.invalidateQueries({ queryKey: ['templates', workspaceId] }),
+  })
+}
+
+export function useDeleteTemplate() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: ({ workspaceId, id }: { workspaceId: string; id: string }) =>
+      api.delete(`/workspaces/${workspaceId}/templates/${id}`).then((r) => r.data),
+    onSuccess: (_d, { workspaceId }) => qc.invalidateQueries({ queryKey: ['templates', workspaceId] }),
+  })
+}

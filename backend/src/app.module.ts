@@ -9,6 +9,10 @@ import { MeetingModule } from './modules/meeting/meeting.module'
 import { TranscriptModule } from './modules/transcript/transcript.module'
 import { ProtocolModule } from './modules/protocol/protocol.module'
 import { ProcessingModule } from './workers/processing.module'
+import { ChatModule } from './modules/chat/chat.module'
+import { ProjectModule } from './modules/project/project.module'
+import { ActionsModule } from './modules/actions/actions.module'
+import { TemplatesModule } from './modules/templates/templates.module'
 
 @Module({
   imports: [
@@ -32,6 +36,10 @@ import { ProcessingModule } from './workers/processing.module'
     TranscriptModule,
     ProtocolModule,
     ProcessingModule,
+    ChatModule,
+    ProjectModule,
+    ActionsModule,
+    TemplatesModule,
   ],
 })
 export class AppModule {}

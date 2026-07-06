@@ -29,6 +29,12 @@ export class User extends BaseEntity {
   @Column({ type: 'timestamptz', nullable: true })
   last_login_at: Date | null
 
+  @Column({ type: 'text', nullable: true, select: false })
+  password_reset_token_hash: string | null
+
+  @Column({ type: 'timestamptz', nullable: true, select: false })
+  password_reset_expires_at: Date | null
+
   @OneToMany(() => WorkspaceMember, (member) => member.user)
   workspace_memberships: WorkspaceMember[]
 }

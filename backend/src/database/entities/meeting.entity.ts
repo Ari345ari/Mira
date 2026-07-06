@@ -35,6 +35,12 @@ export class Meeting extends BaseEntity {
   @Column({ type: 'uuid', nullable: true })
   folder_id: string | null
 
+  @Column({ type: 'uuid', nullable: true })
+  suggested_project_id: string | null
+
+  @Column({ type: 'boolean', default: false })
+  suggestion_dismissed: boolean
+
   @Column({ type: 'uuid' })
   created_by: string
 

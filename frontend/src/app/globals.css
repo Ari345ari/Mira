@@ -330,6 +330,38 @@ input[type="date"].input-dark::-webkit-calendar-picker-indicator { filter: inver
   pointer-events: none;
 }
 
+/* ── Print / PDF export ── */
+@media print {
+  @page { size: A4; margin: 0; }
+
+  body * { visibility: hidden; }
+
+  #mira-doc-page,
+  #mira-doc-page * { visibility: visible; }
+
+  #mira-doc-page {
+    position: absolute;
+    top: 0; left: 0;
+    width: 21cm;
+    min-height: 29.7cm;
+    padding: 2.5cm;
+    box-sizing: border-box;
+    box-shadow: none !important;
+    background: #fff !important;
+    border-radius: 0 !important;
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 12pt !important;
+    line-height: 1.15 !important;
+    color: #000 !important;
+  }
+
+  /* Hide pencil icons and buttons; render edit inputs as plain text */
+  #mira-doc-page [data-pencil]   { display: none !important; }
+  #mira-doc-page button          { display: none !important; }
+  #mira-doc-page textarea,
+  #mira-doc-page input           { border: none !important; outline: none !important; background: transparent !important; resize: none !important; padding: 0 !important; box-shadow: none !important; }
+}
+
 .animate-fade-up { animation: fadeUp 0.45s cubic-bezier(0.16,1,0.3,1) both; }
 .animate-fade-in { animation: fadeIn 0.4s ease both; }
 .animate-float   { animation: float 4s ease-in-out infinite; }

@@ -7,7 +7,7 @@ import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger'
 import { AuthService } from './auth.service'
 import {
   SignupDto, LoginDto,
-  RefreshTokenDto, ForgotPasswordDto,
+  RefreshTokenDto, ForgotPasswordDto, ResetPasswordDto,
 } from './auth.dto'
 import { RequestUser } from './jwt.strategy'
 
@@ -44,6 +44,20 @@ export class AuthController {
   async logout(@Body() dto: RefreshTokenDto) {
     await this.authService.logout(dto.refresh_token)
     return { message: 'Logged out successfully' }
+  }
+
+  @ApiOperation({ summary: 'Request password reset token' })
+  @HttpCode(HttpStatus.OK)
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(dto)
+  }
+
+  @ApiOperation({ summary: 'Reset password with token' })
+  @HttpCode(HttpStatus.OK)
+  @Post('reset-password')
+  async resetPassword(@Body() dto: ResetPasswordDto) {
+    return this.authService.resetPassword(dto)
   }
 
   @ApiOperation({ summary: 'Get current user' })

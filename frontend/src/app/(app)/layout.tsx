@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import Sidebar from '@/components/sidebar'
 import { SidebarProvider } from '@/components/sidebar-context'
+import { AiChat } from '@/components/ai-chat'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter()
@@ -66,6 +67,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <main className="flex-1 min-h-0 overflow-y-auto">
           {children}
         </main>
+        <AiChat />
       </div>
     </SidebarProvider>
   )
