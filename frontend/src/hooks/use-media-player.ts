@@ -1,7 +1,21 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { useAuthStore } from '@/store/auth'
+
+// Read straight from localStorage (like the axios interceptor in lib/api.ts)
+// instead of the zustand store's in-memory state, which may not have
+// rehydrated from persisted storage yet on a fresh page load
+function getAccessToken(): string | null {
+  if (typeof window === 'undefined') return null
+  try {
+    const stored = localStorage.getItem('mira-auth')
+    if (!stored) return null
+    const { state } = JSON.parse(stored)
+    return state?.accessToken ?? null
+  } catch {
+    return null
+  }
+}
 
 export function useMediaPlayer(meetingId: string, enabled: boolean) {
   const ref = useRef<HTMLVideoElement>(null)
@@ -16,7 +30,7 @@ export function useMediaPlayer(meetingId: string, enabled: boolean) {
   useEffect(() => {
     if (!enabled) return
     let cancelled = false
-    const token = useAuthStore.getState().accessToken
+    const token = getAccessToken()
     const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1'
     const url = `${base}/meetings/${meetingId}/media?token=${encodeURIComponent(token ?? '')}`
     // HEAD first just to read Content-Type — the actual media loads via native
