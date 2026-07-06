@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import api from '@/lib/api'
+import { useAuthStore } from '@/store/auth'
 
 export function useMediaPlayer(meetingId: string, enabled: boolean) {
   const ref = useRef<HTMLVideoElement>(null)
@@ -15,17 +15,20 @@ export function useMediaPlayer(meetingId: string, enabled: boolean) {
 
   useEffect(() => {
     if (!enabled) return
-    let url = ''
     let cancelled = false
-    api.get(`/meetings/${meetingId}/media`, { responseType: 'blob', timeout: 0 })
+    const token = useAuthStore.getState().accessToken
+    const base = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3000/api/v1'
+    const url = `${base}/meetings/${meetingId}/media?token=${encodeURIComponent(token ?? '')}`
+    // HEAD first just to read Content-Type — the actual media loads via native
+    // <video>/<audio> streaming (with Range support) instead of a full blob fetch
+    fetch(url, { method: 'HEAD' })
       .then(r => {
         if (cancelled) return
-        setIsVideo(r.data.type?.startsWith('video/'))
-        url = URL.createObjectURL(r.data)
+        setIsVideo((r.headers.get('content-type') ?? '').startsWith('video/'))
         setMediaUrl(url)
       })
       .catch(() => { if (!cancelled) setMediaError(true) })
-    return () => { cancelled = true; if (url) URL.revokeObjectURL(url) }
+    return () => { cancelled = true }
   }, [enabled, meetingId])
 
   useEffect(() => {

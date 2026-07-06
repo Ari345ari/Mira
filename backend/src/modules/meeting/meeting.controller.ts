@@ -1,5 +1,5 @@
 import {
-  Controller, Get, Post, Delete, Param, Body, Query,
+  Controller, Get, Head, Post, Delete, Param, Body, Query,
   UseGuards, Request, UseInterceptors, UploadedFile,
   NotFoundException, Headers, Res, StreamableFile,
 } from '@nestjs/common'
@@ -47,6 +47,33 @@ export class MeetingController {
     return this.meetingService.create(req.user.userId, dto, file)
   }
 
+  @Head(':id/media')
+  async headMedia(
+    @Param('id') id: string,
+    @Request() req: any,
+    @Res({ passthrough: false }) res: Response,
+  ) {
+    const { mimeType, fileSize } = await this.resolveMediaFile(id, req.user.userId)
+    res.writeHead(200, {
+      'Content-Length': fileSize,
+      'Content-Type': mimeType,
+      'Accept-Ranges': 'bytes',
+    })
+    res.end()
+  }
+
+  private async resolveMediaFile(id: string, userId: string) {
+    const meeting = await this.meetingService.getById(id, userId)
+    const filePath = meeting.file_path
+    if (!filePath || !fs.existsSync(filePath)) {
+      throw new NotFoundException('Media file not found')
+    }
+    const ext = path.extname(filePath).toLowerCase()
+    const mimeType = MIME[ext] ?? 'application/octet-stream'
+    const fileSize = fs.statSync(filePath).size
+    return { filePath, mimeType, fileSize }
+  }
+
   @Get(':id/media')
   async streamMedia(
     @Param('id') id: string,
@@ -54,16 +81,7 @@ export class MeetingController {
     @Headers('range') range: string,
     @Res({ passthrough: false }) res: Response,
   ) {
-    const meeting = await this.meetingService.getById(id, req.user.userId)
-    const filePath = meeting.file_path
-    if (!filePath || !fs.existsSync(filePath)) {
-      throw new NotFoundException('Media file not found')
-    }
-
-    const ext = path.extname(filePath).toLowerCase()
-    const mimeType = MIME[ext] ?? 'application/octet-stream'
-    const stat = fs.statSync(filePath)
-    const fileSize = stat.size
+    const { filePath, mimeType, fileSize } = await this.resolveMediaFile(id, req.user.userId)
 
     if (range) {
       const [startStr, endStr] = range.replace(/bytes=/, '').split('-')
