@@ -10,7 +10,9 @@ async function bootstrap() {
   const config = app.get(ConfigService)
 
   // Security
-  app.use(helmet())
+  // crossOriginResourcePolicy relaxed since the frontend lives on a different
+  // origin (separate Railway service) and needs to read API responses
+  app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }))
   app.enableCors({
     origin: config.get('FRONTEND_URL', 'http://localhost:3001'),
     credentials: true,
